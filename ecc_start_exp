@@ -1,0 +1,15 @@
+#!/usr/bin/expect
+set startall [lindex $argv 0]
+set web_pw [lindex $argv 1]
+set timeout 1
+
+spawn ./ecc_start.sh
+
+
+#expect "Confirm if all Mid Tier services are in SHUTDOWN state. Enter \"Yes\" to proceed or anything else to exit:\r"
+expect "Select ECC Component you want to start\r"
+send -- "1\r"
+expect "Enter password for ECC domain admin user weblogic:\r"
+send -- "webECC0205LSYS021_int\r"
+set timeout -1
+expect eof

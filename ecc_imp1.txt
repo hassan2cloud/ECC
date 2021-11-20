@@ -1,0 +1,69 @@
+NSF_STARTALL.sh
+#!/bin/bash
+ymldir=/home/applecc/admin/playbooks/admin
+
+ansible-playbook -vvvvvv -i /home/applecc/admin/local/ecc_inv $ymldir/ecc_start.yml
+
+NSF_STOPALL.sh
+#!/bin/bash
+ymldir=/home/applecc/admin/playbooks/admin
+
+ansible-playbook -vvvvvv -i /home/applecc/admin/local/ecc_inv $ymldir/ecc_stop.yml
+
+inv
+[eccmt01]
+fmlobleccmt01.afsfmlob.local
+[eccmt01:vars]
+download="/install.media2/ECC/downloads"
+#Environment File: ~applecc/ecc.env
+ecc_stage="/install.media2/ECC"
+ecc_base="/ecc01/oracle/ECC"
+ecc_scripts="/home/applecc/admin/scripts/"
+ecc_logs="/home/applecc/admin/logs/"
+ecc_weblogic="weblogic4e5ccPFX"
+
+
+---
+  - hosts: eccmt01
+    connection: local
+    gather_facts: False
+
+
+    tasks:
+
+       - name: Ecc Stop All
+         shell:
+          cmd: |
+                 source ~/ecc.env
+                 cd  {{ ecc_scripts }}
+                 /bin/expect ecc_stop.exp 1 {{ ecc_weblogic }} 4
+                 echo "COMPLETED" > {{ ecc_logs }}/ecc_stop.txt
+         register: status_check
+         failed_when: "'Fail' in status_check.stdout_lines"
+
+         tags:
+            - ECCSTOP
+
+
+---
+  - hosts: eccmt01
+    connection: local
+    gather_facts: False
+
+
+    tasks:
+
+       - name: Ecc Start All
+         shell:
+          cmd: |
+                 source ~/ecc.env
+                 cd  {{ ecc_scripts }}
+                 /bin/expect ecc_start.exp 1 {{ ecc_weblogic }} 4
+                 echo "COMPLETED" > {{ ecc_logs }}/ecc_start.txt
+         register: status_check
+         failed_when: "'The ECC Admin Server failed' in status_check.stdout_lines"
+
+         tags:
+            - ECCSTART
+
+
